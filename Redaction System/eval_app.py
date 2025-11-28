@@ -182,4 +182,5 @@ with tab3:
                 st.subheader("Entities Detected")
                 st.dataframe(ent_df[["type", "text"]], use_container_width=True)
     else:
+
         st.info("Run a batch evaluation first to see results here.")
