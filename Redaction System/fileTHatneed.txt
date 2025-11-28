@@ -1,0 +1,7 @@
+/project
+   redactor.py
+   ui.py
+   accuracy.py
+   dataset/
+   README.md
+   (optional) slides
