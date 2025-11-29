@@ -1,4 +1,3 @@
-# redactor.py
 from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
@@ -9,9 +8,7 @@ class RedactionEngine:
         self.analyzer = AnalyzerEngine()
         self.anonymizer = AnonymizerEngine()
 
-        # ------------------------------
         # Add custom phone number pattern
-        # ------------------------------
         phone_regex = r"(\+?\d{1,4}[-.\s]?)??(\(?\d{1,4}\)?[-.\s]?)+\d{1,10}"
 
         phone_pattern = Pattern(
@@ -25,7 +22,6 @@ class RedactionEngine:
             patterns=[phone_pattern]
         )
 
-        # Add recognizer to Presidio registry
         self.analyzer.registry.add_recognizer(phone_recognizer)
 
     def process(self, text: str, mode: str = "redact"):
@@ -42,25 +38,27 @@ class RedactionEngine:
         ]
 
         if mode == "redact":
-            anonymized = self.anonymizer.anonymize(
-                text=text,
-                analyzer_results=results,
-                operators={"DEFAULT": OperatorConfig("replace", {"new_value": ""})}
-            )
-            redacted_text = anonymized.text
-
-        else:  # highlight mode
+            # Redact মোডে সব entities **** দিয়ে প্রতিস্থাপন করা হবে
             operators = {
-                r.entity_type: OperatorConfig("replace", {"new_value": f"[{r.entity_type}]"})
-                for r in results
+                entity_type: OperatorConfig("replace", {"new_value":" "})
+                for entity_type in {r.entity_type for r in results}
             }
+            operators["DEFAULT"] = OperatorConfig("replace", {"new_value":" "})
+        else:
+            # Mask মোডে entities তাদের নিজস্ব entity type এর সাথে [ENTITY] ফরম্যাটে প্রতিস্থাপন করা হবে
+            operators = {}
+            for r in results:
+                entity_tag = f"[{r.entity_type}]"
+                operators[r.entity_type] = OperatorConfig("replace", {"new_value": entity_tag})
+            operators["DEFAULT"] = OperatorConfig("replace", {"new_value": "[DEFAULT]"})
 
-            operators["DEFAULT"] = OperatorConfig("replace", {"new_value": "[REDACTED]"})
-            anonymized = self.anonymizer.anonymize(
-                text=text,
-                analyzer_results=results,
-                operators=operators
-            )
-            redacted_text = anonymized.text
+        anonymized = self.anonymizer.anonymize(
+            text=text,
+            analyzer_results=results,
+            operators=operators
+        )
+
+        redacted_text = anonymized.text
 
         return redacted_text.strip(), sorted(entities, key=lambda x: x["start"])
+
