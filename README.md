@@ -9,9 +9,10 @@
 <h1>Work Flow</h1>
 <h2>
   determine reduction using bulk or single line methord
-  <li>single line</li>
+  <li>single line
     <ul>to determine single line code just paste line and click on start  </ul>
-  <li>
+    </li>
+  <li> Bulk Upload 
     <ul>to deter mine redaction of a json,text or zip file use bulk upload bar and start  </ul>
   </li>
 </h2>
